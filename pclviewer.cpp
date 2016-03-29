@@ -1,11 +1,13 @@
 #include "pclviewer.h"
 #include "ui_pclviewer.h"
+#include "Eigen/Dense"
 
 PCLViewer::PCLViewer (QWidget *parent) :
     QMainWindow (parent),
     ui (new Ui::PCLViewer),
     filtering_axis_ (1),  // = y
-    color_mode_ (4)  // = Rainbow
+    color_mode_ (4),  // = Rainbow
+    file_path("/home/")
 {
   ui->setupUi (this);
   this->setWindowTitle ("PCL viewer");
@@ -35,6 +37,7 @@ PCLViewer::PCLViewer (QWidget *parent) :
   connect (ui->pushButton_load, SIGNAL(clicked ()), this, SLOT(loadFileButtonPressed ()));
   connect (ui->pushButton_save, SIGNAL(clicked ()), this, SLOT(saveFileButtonPressed ()));
 
+
   // Connect X,Y,Z radio buttons and their functions
   connect (ui->radioButton_x, SIGNAL(clicked ()), this, SLOT(axisChosen ()));
   connect (ui->radioButton_y, SIGNAL(clicked ()), this, SLOT(axisChosen ()));
@@ -62,13 +65,16 @@ void
 PCLViewer::loadFileButtonPressed ()
 {
   // You might want to change "/home/" if you're not on an *nix platform
-  QString filename = QFileDialog::getOpenFileName (this, tr ("Open point cloud"), "/home/", tr ("Point cloud data (*.pcd *.ply)"));
+  QString filename = QFileDialog::getOpenFileName (this, tr ("Open point cloud"), this->file_path.toStdString().c_str(), tr ("Point cloud data (*.pcd *.ply)"));
 
   PCL_INFO("File chosen: %s\n", filename.toStdString ().c_str ());
   PointCloudT::Ptr cloud_tmp (new PointCloudT);
 
   if (filename.isEmpty ())
     return;
+
+  QFileInfo fi(filename);
+  this->file_path = fi.dir().path();
 
   int return_status;
   if (filename.endsWith (".pcd", Qt::CaseInsensitive))
@@ -123,6 +129,7 @@ PCLViewer::saveFileButtonPressed ()
   if (return_status != 0)
   {
     PCL_ERROR("Error writing point cloud %s\n", filename.toStdString ().c_str ());
+
     return;
   }
 }
