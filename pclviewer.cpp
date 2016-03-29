@@ -1,5 +1,7 @@
+// based on http://pointclouds.org/documentation/tutorials/qt_colorize_cloud.php#qt-colorize-cloud
+
 #include "pclviewer.h"
-#include "ui_pclviewer.h"
+#include "build/ui_pclviewer.h"
 #include "Eigen/Dense"
 
 PCLViewer::PCLViewer (QWidget *parent) :
@@ -12,14 +14,6 @@ PCLViewer::PCLViewer (QWidget *parent) :
   this->setWindowTitle ("Point Cloud Viewer");
 
   cloud_.reset (new PointCloudT);
-  // cloud_->resize (500);
-  // for (size_t i = 0; i < cloud_->points.size (); ++i)
-  // {
-  //   cloud_->points[i].x = 1024 * rand () / (RAND_MAX + 1.0f);
-  //   cloud_->points[i].y = 1024 * rand () / (RAND_MAX + 1.0f);
-  //   cloud_->points[i].z = 1024 * rand () / (RAND_MAX + 1.0f);
-  // }
-
 
   // Set up the QVTK window
   viewer_.reset (new pcl::visualization::PCLVisualizer ("viewer", false));
@@ -117,6 +111,7 @@ PCLViewer::render()
 {
   QProgressDialog dialog("Loading...", "Cancel", 0, 0, this);
   dialog.setWindowModality(Qt::WindowModal);
+  dialog.setCancelButton(0); // since `QtConcurrent::run` cannot be canceled
   dialog.setValue(0);
 
   QString filename = ui->lineEdit_path->text();
