@@ -15,7 +15,7 @@ PCLViewer::PCLViewer (QWidget *parent) :
 
   // Set up the QVTK window
   viewer_.reset (new pcl::visualization::PCLVisualizer ("viewer", false));
-  viewer_->setBackgroundColor (0.1, 0.1, 0.1);
+  viewer_->setBackgroundColor (0.1, 0.1, 0.1); // so that we can see black points
   ui->qvtkWidget->SetRenderWindow (viewer_->getRenderWindow ());
   viewer_->setupInteractor (ui->qvtkWidget->GetInteractor (), ui->qvtkWidget->GetRenderWindow ());
   viewer_->setShowFPS(false);
@@ -26,17 +26,21 @@ PCLViewer::PCLViewer (QWidget *parent) :
   connect (ui->pushButton_load, SIGNAL(clicked ()), this, SLOT(loadFileButtonPressed ()));
 
   // point color
-  connect (ui->radioButton_Original, SIGNAL(clicked ()), this, SLOT(updateColor()));
-  connect (ui->radioButton_Red, SIGNAL(clicked ()), this, SLOT(updateColor()));
-  connect (ui->radioButton_Green, SIGNAL(clicked ()), this, SLOT(updateColor()));
-  connect (ui->radioButton_Blue, SIGNAL(clicked ()), this, SLOT(updateColor()));
-  connect (ui->radioButton_Rainbow, SIGNAL(clicked ()), this, SLOT(updateColor()));
+  connect (ui->radioButton_Original, SIGNAL(clicked ()), this, SLOT(colorSelected()));
+  connect (ui->radioButton_Red, SIGNAL(clicked ()), this, SLOT(colorSelected()));
+  connect (ui->radioButton_Green, SIGNAL(clicked ()), this, SLOT(colorSelected()));
+  connect (ui->radioButton_Blue, SIGNAL(clicked ()), this, SLOT(colorSelected()));
+  connect (ui->radioButton_Rainbow, SIGNAL(clicked ()), this, SLOT(colorSelected()));
 
   // point size
   connect (ui->horizontalSlider_p, SIGNAL (valueChanged (int)), this, SLOT (pSliderValueChanged (int)));
 
   this->first_time = true;
-  render();
+
+  QString filename = ui->lineEdit_path->text();
+  load(filename);
+  viewer_->resetCamera ();
+  ui->qvtkWidget->update ();
 }
 
 PCLViewer::~PCLViewer ()
@@ -45,9 +49,76 @@ PCLViewer::~PCLViewer ()
 }
 
 void
+PCLViewer::load(QString &filename) 
+{
+  QProgressDialog dialog("Loading...", "Cancel", 0, 0, this);
+  dialog.setWindowModality(Qt::WindowModal);
+  dialog.setCancelButton(0); // since `QtConcurrent::run` cannot be canceled
+  dialog.setValue(0);
+
+  PCL_INFO("File chosen: %s\n", filename.toStdString ().c_str ());
+
+  QFutureWatcher<void> futureWatcher;
+
+  QObject::connect(&futureWatcher, SIGNAL(finished()), &dialog, SLOT(reset()));
+  QObject::connect(&dialog, SIGNAL(canceled()), &futureWatcher, SLOT(cancel()));
+
+  // note: `run()` can not be canceled
+  QFuture<void> future = QtConcurrent::run(this, &PCLViewer::loadAsync, filename);
+
+  // start loading
+  futureWatcher.setFuture(future);
+
+  // show progress dialog
+  dialog.exec();
+
+  futureWatcher.waitForFinished();
+
+}
+
+void
+PCLViewer::paintCloud()
+{
+  // Only 1 of the button can be checked at the time (mutual exclusivity) in a group of radio buttons
+  if (ui->radioButton_Original->isChecked ())
+  {
+    PCL_INFO("Original chosen\n");
+    pcl::visualization::PointCloudColorHandlerRGBField<pcl::PointXYZRGBA> handler(cloud_);
+    addOrUpdateCloud(handler);
+  }
+  else if (ui->radioButton_Red->isChecked ())
+  {
+    PCL_INFO("Red chosen\n");
+    pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZRGBA> handler(cloud_, 255, 0, 0);
+    addOrUpdateCloud(handler);
+  }
+  else if (ui->radioButton_Green->isChecked ())
+  {
+    PCL_INFO("Green chosen\n");
+    pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZRGBA> handler(cloud_, 0, 255, 0);
+    addOrUpdateCloud(handler);
+  }
+  else if (ui->radioButton_Blue->isChecked ())
+  {
+    PCL_INFO("Blue chosen\n");
+    pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZRGBA> handler(cloud_, 0, 0, 255);
+    addOrUpdateCloud(handler);
+  }
+  else
+  {
+    PCL_INFO("Rainbow chosen\n");
+    pcl::visualization::PointCloudColorHandlerGenericField<pcl::PointXYZRGBA> handler (cloud_, "y");
+    addOrUpdateCloud(handler);
+  }
+
+}
+
+
+// slots
+
+void
 PCLViewer::browseFileButtonPressed ()
 {
-  // You might want to change "/home/" if you're not on an *nix platform
 
   QString dir;
   QFileInfo fi(ui->lineEdit_path->text());
@@ -70,7 +141,44 @@ PCLViewer::browseFileButtonPressed ()
 }
 
 void
-PCLViewer::loadFile(QString &filename) 
+PCLViewer::loadFileButtonPressed ()
+{
+  QString filename = ui->lineEdit_path->text();
+  load(filename);
+}
+
+void
+PCLViewer::colorSelected ()
+{
+  paintCloud();
+  ui->qvtkWidget->update ();
+}
+
+void
+PCLViewer::pSliderValueChanged (int value)
+{
+  viewer_->setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE, value, "cloud");
+  ui->qvtkWidget->update ();
+}
+
+// helpers
+
+void
+PCLViewer::addOrUpdateCloud(pcl::visualization::PointCloudColorHandler<pcl::PointXYZRGBA> &handler)
+{
+  if(first_time) 
+  {
+    viewer_->addPointCloud (cloud_, handler, "cloud");
+    first_time = false;
+  } 
+  else
+  {
+    viewer_->updatePointCloud (cloud_, handler, "cloud");
+  }
+}
+
+void
+PCLViewer::loadAsync(QString &filename) 
 {
   PointCloudT::Ptr cloud_tmp (new PointCloudT);
 
@@ -97,102 +205,6 @@ PCLViewer::loadFile(QString &filename)
     pcl::removeNaNFromPointCloud (*cloud_tmp, *cloud_, vec);
   }
 
-  // colorCloudDistances ();
-}
-
-void
-PCLViewer::render() 
-{
-  QProgressDialog dialog("Loading...", "Cancel", 0, 0, this);
-  dialog.setWindowModality(Qt::WindowModal);
-  dialog.setCancelButton(0); // since `QtConcurrent::run` cannot be canceled
-  dialog.setValue(0);
-
-  QString filename = ui->lineEdit_path->text();
-  PCL_INFO("File chosen: %s\n", filename.toStdString ().c_str ());
-
-  QFutureWatcher<void> futureWatcher;
-
-  QObject::connect(&futureWatcher, SIGNAL(finished()), &dialog, SLOT(reset()));
-  QObject::connect(&dialog, SIGNAL(canceled()), &futureWatcher, SLOT(cancel()));
-
-  QFuture<void> future = QtConcurrent::run(this, &PCLViewer::loadFile, filename);
-
-  // start loading
-  futureWatcher.setFuture(future);
-
-  dialog.exec();
-
-  futureWatcher.waitForFinished();
-
-  updateColor();
-
-  viewer_->resetCamera ();
-
-}
-
-void
-PCLViewer::loadFileButtonPressed ()
-{
-  render();
-}
-
-void
-PCLViewer::updateViewer(pcl::visualization::PointCloudColorHandler<pcl::PointXYZRGBA> &handler)
-{
-  if(first_time) 
-  {
-    viewer_->addPointCloud (cloud_, handler, "cloud");
-    first_time = false;
-  } 
-  else
-  {
-    viewer_->updatePointCloud (cloud_, handler, "cloud");
-  }
-  ui->qvtkWidget->update ();
-}
-
-void
-PCLViewer::updateColor ()
-{
-  // Only 1 of the button can be checked at the time (mutual exclusivity) in a group of radio buttons
-  if (ui->radioButton_Original->isChecked ())
-  {
-    PCL_INFO("Original chosen\n");
-    pcl::visualization::PointCloudColorHandlerRGBField<pcl::PointXYZRGBA> handler(cloud_);
-    updateViewer(handler);
-  }
-  else if (ui->radioButton_Red->isChecked ())
-  {
-    PCL_INFO("Red chosen\n");
-    pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZRGBA> handler(cloud_, 255, 0, 0);
-    updateViewer(handler);
-  }
-  else if (ui->radioButton_Green->isChecked ())
-  {
-    PCL_INFO("Green chosen\n");
-    pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZRGBA> handler(cloud_, 0, 255, 0);
-    updateViewer(handler);
-  }
-  else if (ui->radioButton_Blue->isChecked ())
-  {
-    PCL_INFO("Blue chosen\n");
-    pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZRGBA> handler(cloud_, 0, 0, 255);
-    updateViewer(handler);
-  }
-  else
-  {
-    PCL_INFO("Rainbow chosen\n");
-    pcl::visualization::PointCloudColorHandlerGenericField<pcl::PointXYZRGBA> handler (cloud_, "y");
-    updateViewer(handler);
-  }
-}
-
-
-void
-PCLViewer::pSliderValueChanged (int value)
-{
-  viewer_->setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE, value, "cloud");
-  ui->qvtkWidget->update ();
+  paintCloud();
 }
 

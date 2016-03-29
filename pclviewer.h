@@ -44,12 +44,6 @@ class PCLViewer : public QMainWindow
     /** @brief Destructor */
     ~PCLViewer ();
 
-    void
-    render ();
-
-    void
-    loadFile (QString &filename);
-
   public slots:
     void
     browseFileButtonPressed ();
@@ -60,7 +54,7 @@ class PCLViewer : public QMainWindow
 
     /** @brief Triggered whenever a button in the "Color mode" group is clicked */
     void
-    updateColor ();
+    colorSelected ();
 
     void
     pSliderValueChanged (int value);
@@ -73,8 +67,16 @@ class PCLViewer : public QMainWindow
     PointCloudT::Ptr cloud_;
 
     void
-    updateViewer(pcl::visualization::PointCloudColorHandler<pcl::PointXYZRGBA> &handler);
+    addOrUpdateCloud(pcl::visualization::PointCloudColorHandler<pcl::PointXYZRGBA> &handler);
 
+    void
+    load (QString &filename);
+
+    void
+    loadAsync (QString &filename);
+    
+    void
+    paintCloud();
 
   private:
     /** @brief ui pointer */
