@@ -31,20 +31,12 @@ main (int argc, char** argv)
 
   int n = 1;
 
-  // 10
-  // 100
-  // 1000
-  // 10000
-  // 100000
-  // 1000000
-  // 10000000
-
   for(int i=0; i<7; i++) {
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud = createRandomCloud(n, 10);
 
-    pcl::io::savePCDFileASCII ("test_pcd_" + boost::lexical_cast<std::string>(i) + ".pcd", *cloud);
+    pcl::io::savePCDFileASCII ("test_pcd_" + boost::lexical_cast<std::string>(n*10) + ".pcd", *cloud);
 
-    std::cerr << "Saved " << cloud->points.size () << " data points." << std::endl;
+    std::cerr << "Saved " << cloud->points.size () << " data points to test_pcd_" << boost::lexical_cast<std::string>(n*10) << ".pcd" << std::endl;
 
     // for (size_t i = 0; i < cloud->points.size (); ++i)
     //   std::cerr << "    " << cloud->points[i].x << " " << cloud->points[i].y << " " << cloud->points[i].z << std::endl;
