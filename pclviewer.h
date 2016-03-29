@@ -4,6 +4,10 @@
 // Qt
 #include <QMainWindow>
 #include <QFileDialog>
+#include <QProgressDialog>
+#include <QFuture>
+#include <QFutureWatcher>
+#include <QtConcurrentRun>
 
 // Point Cloud Library
 #include <pcl/point_cloud.h>
@@ -39,6 +43,12 @@ class PCLViewer : public QMainWindow
     /** @brief Destructor */
     ~PCLViewer ();
 
+    void
+    render ();
+
+    void
+    loadFile (QString &filename);
+
   public slots:
     void
     browseFileButtonPressed ();
@@ -54,6 +64,9 @@ class PCLViewer : public QMainWindow
     /** @brief Triggered whenever a button in the "Color mode" group is clicked */
     void
     lookUpTableChosen ();
+
+    void
+    pSliderValueChanged (int value);
 
   protected:
     /** @brief The PCL visualizer object */
@@ -88,7 +101,7 @@ class PCLViewer : public QMainWindow
     /** @brief ui pointer */
     Ui::PCLViewer *ui;
 
-    QString file_path;
+    bool first_time;
 };
 
 #endif // PCLVIEWER_H

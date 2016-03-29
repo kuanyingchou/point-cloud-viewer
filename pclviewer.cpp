@@ -9,20 +9,17 @@ PCLViewer::PCLViewer (QWidget *parent) :
     color_mode_ (4)  // = Rainbow
 {
   ui->setupUi (this);
-  this->setWindowTitle ("PCL viewer");
+  this->setWindowTitle ("Point Cloud Viewer");
 
-  // Setup the cloud pointer
   cloud_.reset (new PointCloudT);
-  // The number of points in the cloud
-  cloud_->resize (500);
+  // cloud_->resize (500);
+  // for (size_t i = 0; i < cloud_->points.size (); ++i)
+  // {
+  //   cloud_->points[i].x = 1024 * rand () / (RAND_MAX + 1.0f);
+  //   cloud_->points[i].y = 1024 * rand () / (RAND_MAX + 1.0f);
+  //   cloud_->points[i].z = 1024 * rand () / (RAND_MAX + 1.0f);
+  // }
 
-  // Fill the cloud with random points
-  for (size_t i = 0; i < cloud_->points.size (); ++i)
-  {
-    cloud_->points[i].x = 1024 * rand () / (RAND_MAX + 1.0f);
-    cloud_->points[i].y = 1024 * rand () / (RAND_MAX + 1.0f);
-    cloud_->points[i].z = 1024 * rand () / (RAND_MAX + 1.0f);
-  }
 
   // Set up the QVTK window
   viewer_.reset (new pcl::visualization::PCLVisualizer ("viewer", false));
@@ -30,7 +27,7 @@ PCLViewer::PCLViewer (QWidget *parent) :
   ui->qvtkWidget->SetRenderWindow (viewer_->getRenderWindow ());
   viewer_->setupInteractor (ui->qvtkWidget->GetInteractor (), ui->qvtkWidget->GetRenderWindow ());
   viewer_->setShowFPS(false);
-  ui->qvtkWidget->update ();
+  // ui->qvtkWidget->update ();
 
   // Connect "Load" and "Save" buttons and their functions
   connect (ui->pushButton_browse, SIGNAL(clicked ()), this, SLOT(browseFileButtonPressed ()));
@@ -48,11 +45,10 @@ PCLViewer::PCLViewer (QWidget *parent) :
   connect (ui->radioButton_GreyRed, SIGNAL(clicked ()), this, SLOT(lookUpTableChosen()));
   connect (ui->radioButton_Rainbow, SIGNAL(clicked ()), this, SLOT(lookUpTableChosen()));
 
-  // Color the randomly generated cloud
-  colorCloudDistances ();
-  viewer_->addPointCloud (cloud_, "cloud");
-  viewer_->resetCamera ();
-  ui->qvtkWidget->update ();
+  connect (ui->horizontalSlider_p, SIGNAL (valueChanged (int)), this, SLOT (pSliderValueChanged (int)));
+
+  this->first_time = true;
+  render();
 }
 
 PCLViewer::~PCLViewer ()
@@ -68,7 +64,8 @@ PCLViewer::browseFileButtonPressed ()
   QString dir;
   QFileInfo fi(ui->lineEdit_path->text());
 
-  if(fi.exists()) {
+  if(fi.exists()) 
+  {
     dir = fi.dir().path();
   } else {
     dir = "/home/";
@@ -85,14 +82,12 @@ PCLViewer::browseFileButtonPressed ()
 }
 
 void
-PCLViewer::loadFileButtonPressed ()
+PCLViewer::loadFile(QString &filename) 
 {
-  QString filename = ui->lineEdit_path->text();
-
-  PCL_INFO("File chosen: %s\n", filename.toStdString ().c_str ());
   PointCloudT::Ptr cloud_tmp (new PointCloudT);
 
   int return_status;
+
   if (filename.endsWith (".pcd", Qt::CaseInsensitive))
     return_status = pcl::io::loadPCDFile (filename.toStdString (), *cloud_tmp);
   else
@@ -115,9 +110,51 @@ PCLViewer::loadFileButtonPressed ()
   }
 
   colorCloudDistances ();
-  viewer_->updatePointCloud (cloud_, "cloud");
+}
+
+void
+PCLViewer::render() 
+{
+  QProgressDialog dialog("Loading...", "Cancel", 0, 0, this);
+  dialog.setWindowModality(Qt::WindowModal);
+  dialog.setValue(0);
+
+  QString filename = ui->lineEdit_path->text();
+  PCL_INFO("File chosen: %s\n", filename.toStdString ().c_str ());
+
+  QFutureWatcher<void> futureWatcher;
+
+  QObject::connect(&futureWatcher, SIGNAL(finished()), &dialog, SLOT(reset()));
+  QObject::connect(&dialog, SIGNAL(canceled()), &futureWatcher, SLOT(cancel()));
+
+  QFuture<void> future = QtConcurrent::run(this, &PCLViewer::loadFile, filename);
+
+  // start loading
+  futureWatcher.setFuture(future);
+
+  dialog.exec();
+
+  futureWatcher.waitForFinished();
+
+  if(first_time) 
+  {
+    viewer_->addPointCloud (cloud_, "cloud");
+    first_time = false;
+  }
+  else
+  {
+    viewer_->updatePointCloud (cloud_, "cloud");
+  }
+
   viewer_->resetCamera ();
   ui->qvtkWidget->update ();
+
+}
+
+void
+PCLViewer::loadFileButtonPressed ()
+{
+  render();
 }
 
 void
@@ -177,6 +214,14 @@ PCLViewer::lookUpTableChosen ()
 
   colorCloudDistances ();
   viewer_->updatePointCloud (cloud_, "cloud");
+  ui->qvtkWidget->update ();
+}
+
+
+void
+PCLViewer::pSliderValueChanged (int value)
+{
+  viewer_->setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE, value, "cloud");
   ui->qvtkWidget->update ();
 }
 
