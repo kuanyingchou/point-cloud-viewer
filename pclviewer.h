@@ -40,9 +40,8 @@ class PCLViewer : public QMainWindow
     ~PCLViewer ();
 
   public slots:
-    /** @brief Triggered whenever the "Save file" button is clicked */
     void
-    saveFileButtonPressed ();
+    browseFileButtonPressed ();
 
     /** @brief Triggered whenever the "Load file" button is clicked */
     void
@@ -88,6 +87,8 @@ class PCLViewer : public QMainWindow
   private:
     /** @brief ui pointer */
     Ui::PCLViewer *ui;
+
+    QString file_path;
 };
 
 #endif // PCLVIEWER_H

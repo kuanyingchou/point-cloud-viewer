@@ -16,6 +16,7 @@
 #include <QtGui/QGroupBox>
 #include <QtGui/QHBoxLayout>
 #include <QtGui/QHeaderView>
+#include <QtGui/QLineEdit>
 #include <QtGui/QMainWindow>
 #include <QtGui/QPushButton>
 #include <QtGui/QRadioButton>
@@ -32,12 +33,15 @@ public:
     QWidget *centralwidget;
     QHBoxLayout *horizontalLayout_3;
     QVBoxLayout *verticalLayout_2;
+    QHBoxLayout *horizontalLayout;
+    QLineEdit *lineEdit_path;
+    QPushButton *pushButton_browse;
+    QPushButton *pushButton_load;
     QGroupBox *groupBox_Axis;
     QHBoxLayout *horizontalLayout_2;
     QRadioButton *radioButton_x;
     QRadioButton *radioButton_y;
     QRadioButton *radioButton_z;
-    QSpacerItem *verticalSpacer;
     QGroupBox *groupBox_ColorMode;
     QVBoxLayout *verticalLayout;
     QRadioButton *radioButton_BlueRed;
@@ -46,9 +50,6 @@ public:
     QRadioButton *radioButton_GreyRed;
     QRadioButton *radioButton_Rainbow;
     QSpacerItem *verticalSpacer_3;
-    QHBoxLayout *horizontalLayout;
-    QPushButton *pushButton_load;
-    QPushButton *pushButton_save;
     QVTKWidget *qvtkWidget;
 
     void setupUi(QMainWindow *PCLViewer)
@@ -65,6 +66,29 @@ public:
         horizontalLayout_3->setObjectName(QString::fromUtf8("horizontalLayout_3"));
         verticalLayout_2 = new QVBoxLayout();
         verticalLayout_2->setObjectName(QString::fromUtf8("verticalLayout_2"));
+        horizontalLayout = new QHBoxLayout();
+        horizontalLayout->setObjectName(QString::fromUtf8("horizontalLayout"));
+        lineEdit_path = new QLineEdit(centralwidget);
+        lineEdit_path->setObjectName(QString::fromUtf8("lineEdit_path"));
+        lineEdit_path->setMinimumSize(QSize(50, 40));
+
+        horizontalLayout->addWidget(lineEdit_path);
+
+        pushButton_browse = new QPushButton(centralwidget);
+        pushButton_browse->setObjectName(QString::fromUtf8("pushButton_browse"));
+        pushButton_browse->setMinimumSize(QSize(30, 40));
+
+        horizontalLayout->addWidget(pushButton_browse);
+
+        pushButton_load = new QPushButton(centralwidget);
+        pushButton_load->setObjectName(QString::fromUtf8("pushButton_load"));
+        pushButton_load->setMinimumSize(QSize(50, 40));
+
+        horizontalLayout->addWidget(pushButton_load);
+
+
+        verticalLayout_2->addLayout(horizontalLayout);
+
         groupBox_Axis = new QGroupBox(centralwidget);
         groupBox_Axis->setObjectName(QString::fromUtf8("groupBox_Axis"));
         QSizePolicy sizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
@@ -107,10 +131,6 @@ public:
 
 
         verticalLayout_2->addWidget(groupBox_Axis);
-
-        verticalSpacer = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
-
-        verticalLayout_2->addItem(verticalSpacer);
 
         groupBox_ColorMode = new QGroupBox(centralwidget);
         groupBox_ColorMode->setObjectName(QString::fromUtf8("groupBox_ColorMode"));
@@ -161,23 +181,6 @@ public:
 
         verticalLayout_2->addWidget(groupBox_ColorMode);
 
-        horizontalLayout = new QHBoxLayout();
-        horizontalLayout->setObjectName(QString::fromUtf8("horizontalLayout"));
-        pushButton_load = new QPushButton(centralwidget);
-        pushButton_load->setObjectName(QString::fromUtf8("pushButton_load"));
-        pushButton_load->setMinimumSize(QSize(50, 40));
-
-        horizontalLayout->addWidget(pushButton_load);
-
-        pushButton_save = new QPushButton(centralwidget);
-        pushButton_save->setObjectName(QString::fromUtf8("pushButton_save"));
-        pushButton_save->setMinimumSize(QSize(50, 40));
-
-        horizontalLayout->addWidget(pushButton_save);
-
-
-        verticalLayout_2->addLayout(horizontalLayout);
-
 
         horizontalLayout_3->addLayout(verticalLayout_2);
 
@@ -202,7 +205,10 @@ public:
 
     void retranslateUi(QMainWindow *PCLViewer)
     {
-        PCLViewer->setWindowTitle(QApplication::translate("PCLViewer", "PCLViewer", 0, QApplication::UnicodeUTF8));
+        PCLViewer->setWindowTitle(QApplication::translate("PCLViewer", "Point Cloud Viewer", 0, QApplication::UnicodeUTF8));
+        lineEdit_path->setText(QApplication::translate("PCLViewer", "/home/", 0, QApplication::UnicodeUTF8));
+        pushButton_browse->setText(QApplication::translate("PCLViewer", "Browse...", 0, QApplication::UnicodeUTF8));
+        pushButton_load->setText(QApplication::translate("PCLViewer", "Load", 0, QApplication::UnicodeUTF8));
         groupBox_Axis->setTitle(QApplication::translate("PCLViewer", "Color on axis", 0, QApplication::UnicodeUTF8));
         radioButton_x->setText(QApplication::translate("PCLViewer", "X", 0, QApplication::UnicodeUTF8));
         radioButton_y->setText(QApplication::translate("PCLViewer", "Y", 0, QApplication::UnicodeUTF8));
@@ -213,8 +219,6 @@ public:
         radioButton_WhiteRed->setText(QApplication::translate("PCLViewer", "White to red", 0, QApplication::UnicodeUTF8));
         radioButton_GreyRed->setText(QApplication::translate("PCLViewer", "Grey / red", 0, QApplication::UnicodeUTF8));
         radioButton_Rainbow->setText(QApplication::translate("PCLViewer", "Rainbow", 0, QApplication::UnicodeUTF8));
-        pushButton_load->setText(QApplication::translate("PCLViewer", "Load file", 0, QApplication::UnicodeUTF8));
-        pushButton_save->setText(QApplication::translate("PCLViewer", "Save file", 0, QApplication::UnicodeUTF8));
     } // retranslateUi
 
 };
