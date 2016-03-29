@@ -87,3 +87,72 @@ https://www.assetstore.unity3d.com/en/#!/content/19811
 http://stackoverflow.com/questions/35328483/ld-library-not-found-for-lvtkftgl
 
 http://www.pcl-users.org/Undefined-symbols-for-architecture-x86-64-i386-at-pcl-visualization-CloudViewer-CloudViewer-td3478272.html
+
+| Help:
+-------
+          p, P   : switch to a point-based representation
+          w, W   : switch to a wireframe-based representation (where available)
+          s, S   : switch to a surface-based representation (where available)
+
+          j, J   : take a .PNG snapshot of the current window view
+          c, C   : display current camera/window parameters
+          f, F   : fly to point mode
+
+          e, E   : exit the interactor
+          q, Q   : stop and call VTK's TerminateApp
+
+           +/-   : increment/decrement overall point size
+     +/- [+ ALT] : zoom in/out 
+
+          g, G   : display scale grid (on/off)
+          u, U   : display lookup table (on/off)
+
+    o, O         : switch between perspective/parallel projection (default = perspective)
+    r, R [+ ALT] : reset camera [to viewpoint = {0, 0, 0} -> center_{x, y, z}]
+    CTRL + s, S  : save camera parameters
+    CTRL + r, R  : restore camera parameters
+
+    ALT + s, S   : turn stereo mode on/off
+    ALT + f, F   : switch between maximized window mode and original size
+
+          l, L           : list all available geometric and color handlers for the current actor map
+    ALT + 0..9 [+ CTRL]  : switch between different geometric handlers (where available)
+          0..9 [+ CTRL]  : switch between different color handlers (where available)
+
+    SHIFT + left click   : select a point (start with -use_point_picking)
+
+          x, X   : toggle rubber band selection mode for left mouse button
+
+
+
+uic pclviewer.ui -o ui_pclviewer.h 
+
+
+void keyboardEventOccurred (const pcl::visualization::KeyboardEvent &event,
+                            void* viewer_void)
+{
+  boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer = *static_cast<boost::shared_ptr<pcl::visualization::PCLVisualizer> *> (viewer_void);
+  if (event.getKeySym () == "w" && event.keyDown ())
+  {
+    // std::cout << "w was pressed!" << std::endl;
+    pcl::visualization::Camera c;
+    viewer->getCameraParameters (c);
+
+    std::cout << c.pos[0] << ", " << c.pos[1] << ", " << c.pos[2] << std::endl;
+
+    Eigen::Vector3d dir(c.focal[0]-c.pos[0], c.focal[1]-c.pos[1], c.focal[2]-c.pos[2]);
+    Eigen::Vector3d lookAt= dir.normalized();
+    double speed = 0.5;
+
+    viewer->setCameraPosition(
+        c.pos[0]+lookAt(0) * speed,
+        c.pos[1]+lookAt(1) * speed,
+        c.pos[2]+lookAt(2) * speed,
+        c.view[0],
+        c.view[1],
+        c.view[2]);
+
+    // std::cout << "camera lookAt: " << camera.focal[0] << camera.focal[1] << camera.focal[2] << endl;
+  }
+}
+
