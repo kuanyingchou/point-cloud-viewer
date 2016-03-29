@@ -106,18 +106,10 @@ public:
 
         groupBox_ColorMode = new QGroupBox(centralwidget);
         groupBox_ColorMode->setObjectName(QString::fromUtf8("groupBox_ColorMode"));
-        QSizePolicy sizePolicy1(QSizePolicy::Expanding, QSizePolicy::Expanding);
-        sizePolicy1.setHorizontalStretch(0);
-        sizePolicy1.setVerticalStretch(0);
-        sizePolicy1.setHeightForWidth(groupBox_ColorMode->sizePolicy().hasHeightForWidth());
-        groupBox_ColorMode->setSizePolicy(sizePolicy1);
-        groupBox_ColorMode->setMinimumSize(QSize(230, 180));
         verticalLayout = new QVBoxLayout(groupBox_ColorMode);
         verticalLayout->setObjectName(QString::fromUtf8("verticalLayout"));
         groupBox_Axis = new QGroupBox(groupBox_ColorMode);
         groupBox_Axis->setObjectName(QString::fromUtf8("groupBox_Axis"));
-        sizePolicy.setHeightForWidth(groupBox_Axis->sizePolicy().hasHeightForWidth());
-        groupBox_Axis->setSizePolicy(sizePolicy);
         horizontalLayout_2 = new QHBoxLayout(groupBox_Axis);
         horizontalLayout_2->setObjectName(QString::fromUtf8("horizontalLayout_2"));
         radioButton_x = new QRadioButton(groupBox_Axis);
@@ -210,11 +202,11 @@ public:
 
         qvtkWidget = new QVTKWidget(centralwidget);
         qvtkWidget->setObjectName(QString::fromUtf8("qvtkWidget"));
-        QSizePolicy sizePolicy2(QSizePolicy::Expanding, QSizePolicy::Expanding);
-        sizePolicy2.setHorizontalStretch(50);
-        sizePolicy2.setVerticalStretch(0);
-        sizePolicy2.setHeightForWidth(qvtkWidget->sizePolicy().hasHeightForWidth());
-        qvtkWidget->setSizePolicy(sizePolicy2);
+        QSizePolicy sizePolicy1(QSizePolicy::Expanding, QSizePolicy::Expanding);
+        sizePolicy1.setHorizontalStretch(50);
+        sizePolicy1.setVerticalStretch(0);
+        sizePolicy1.setHeightForWidth(qvtkWidget->sizePolicy().hasHeightForWidth());
+        qvtkWidget->setSizePolicy(sizePolicy1);
         qvtkWidget->setMinimumSize(QSize(640, 480));
 
         horizontalLayout_3->addWidget(qvtkWidget);
