@@ -145,6 +145,8 @@ PCLViewer::loadFileButtonPressed ()
 {
   QString filename = ui->lineEdit_path->text();
   load(filename);
+  viewer_->resetCamera ();
+  ui->qvtkWidget->update ();
 }
 
 void
