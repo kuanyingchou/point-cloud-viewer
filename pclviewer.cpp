@@ -6,9 +6,7 @@
 
 PCLViewer::PCLViewer (QWidget *parent) :
     QMainWindow (parent),
-    ui (new Ui::PCLViewer),
-    filtering_axis_ (1),  // = y
-    color_mode_ (4)  // = Rainbow
+    ui (new Ui::PCLViewer)
 {
   ui->setupUi (this);
   this->setWindowTitle ("Point Cloud Viewer");
@@ -23,22 +21,18 @@ PCLViewer::PCLViewer (QWidget *parent) :
   viewer_->setShowFPS(false);
   // ui->qvtkWidget->update ();
 
-  // Connect "Load" and "Save" buttons and their functions
+  // io
   connect (ui->pushButton_browse, SIGNAL(clicked ()), this, SLOT(browseFileButtonPressed ()));
   connect (ui->pushButton_load, SIGNAL(clicked ()), this, SLOT(loadFileButtonPressed ()));
 
+  // point color
+  connect (ui->radioButton_Original, SIGNAL(clicked ()), this, SLOT(updateColor()));
+  connect (ui->radioButton_Red, SIGNAL(clicked ()), this, SLOT(updateColor()));
+  connect (ui->radioButton_Green, SIGNAL(clicked ()), this, SLOT(updateColor()));
+  connect (ui->radioButton_Blue, SIGNAL(clicked ()), this, SLOT(updateColor()));
+  connect (ui->radioButton_Rainbow, SIGNAL(clicked ()), this, SLOT(updateColor()));
 
-  // Connect X,Y,Z radio buttons and their functions
-  connect (ui->radioButton_x, SIGNAL(clicked ()), this, SLOT(axisChosen ()));
-  connect (ui->radioButton_y, SIGNAL(clicked ()), this, SLOT(axisChosen ()));
-  connect (ui->radioButton_z, SIGNAL(clicked ()), this, SLOT(axisChosen ()));
-
-  connect (ui->radioButton_BlueRed, SIGNAL(clicked ()), this, SLOT(lookUpTableChosen()));
-  connect (ui->radioButton_GreenMagenta, SIGNAL(clicked ()), this, SLOT(lookUpTableChosen()));
-  connect (ui->radioButton_WhiteRed, SIGNAL(clicked ()), this, SLOT(lookUpTableChosen()));
-  connect (ui->radioButton_GreyRed, SIGNAL(clicked ()), this, SLOT(lookUpTableChosen()));
-  connect (ui->radioButton_Rainbow, SIGNAL(clicked ()), this, SLOT(lookUpTableChosen()));
-
+  // point size
   connect (ui->horizontalSlider_p, SIGNAL (valueChanged (int)), this, SLOT (pSliderValueChanged (int)));
 
   this->first_time = true;
@@ -103,7 +97,7 @@ PCLViewer::loadFile(QString &filename)
     pcl::removeNaNFromPointCloud (*cloud_tmp, *cloud_, vec);
   }
 
-  colorCloudDistances ();
+  // colorCloudDistances ();
 }
 
 void
@@ -131,18 +125,9 @@ PCLViewer::render()
 
   futureWatcher.waitForFinished();
 
-  if(first_time) 
-  {
-    viewer_->addPointCloud (cloud_, "cloud");
-    first_time = false;
-  }
-  else
-  {
-    viewer_->updatePointCloud (cloud_, "cloud");
-  }
+  updateColor();
 
   viewer_->resetCamera ();
-  ui->qvtkWidget->update ();
 
 }
 
@@ -153,63 +138,54 @@ PCLViewer::loadFileButtonPressed ()
 }
 
 void
-PCLViewer::axisChosen ()
+PCLViewer::updateViewer(pcl::visualization::PointCloudColorHandler<pcl::PointXYZRGBA> &handler)
 {
-  // Only 1 of the button can be checked at the time (mutual exclusivity) in a group of radio buttons
-  if (ui->radioButton_x->isChecked ())
+  if(first_time) 
   {
-    PCL_INFO("x filtering chosen\n");
-    filtering_axis_ = 0;
-  }
-  else if (ui->radioButton_y->isChecked ())
-  {
-    PCL_INFO("y filtering chosen\n");
-    filtering_axis_ = 1;
-  }
+    viewer_->addPointCloud (cloud_, handler, "cloud");
+    first_time = false;
+  } 
   else
   {
-    PCL_INFO("z filtering chosen\n");
-    filtering_axis_ = 2;
+    viewer_->updatePointCloud (cloud_, handler, "cloud");
   }
-
-  colorCloudDistances ();
-  viewer_->updatePointCloud (cloud_, "cloud");
   ui->qvtkWidget->update ();
 }
 
 void
-PCLViewer::lookUpTableChosen ()
+PCLViewer::updateColor ()
 {
   // Only 1 of the button can be checked at the time (mutual exclusivity) in a group of radio buttons
-  if (ui->radioButton_BlueRed->isChecked ())
+  if (ui->radioButton_Original->isChecked ())
   {
-    PCL_INFO("Blue -> Red LUT chosen\n");
-    color_mode_ = 0;
+    PCL_INFO("Original chosen\n");
+    pcl::visualization::PointCloudColorHandlerRGBField<pcl::PointXYZRGBA> handler(cloud_);
+    updateViewer(handler);
   }
-  else if (ui->radioButton_GreenMagenta->isChecked ())
+  else if (ui->radioButton_Red->isChecked ())
   {
-    PCL_INFO("Green -> Magenta LUT chosen\n");
-    color_mode_ = 1;
+    PCL_INFO("Red chosen\n");
+    pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZRGBA> handler(cloud_, 255, 0, 0);
+    updateViewer(handler);
   }
-  else if (ui->radioButton_WhiteRed->isChecked ())
+  else if (ui->radioButton_Green->isChecked ())
   {
-    PCL_INFO("White -> Red LUT chosen\n");
-    color_mode_ = 2;
+    PCL_INFO("Green chosen\n");
+    pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZRGBA> handler(cloud_, 0, 255, 0);
+    updateViewer(handler);
   }
-  else if (ui->radioButton_GreyRed->isChecked ())
+  else if (ui->radioButton_Blue->isChecked ())
   {
-    PCL_INFO("Grey / Red LUT chosen\n");
-    color_mode_ = 3;
+    PCL_INFO("Blue chosen\n");
+    pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZRGBA> handler(cloud_, 0, 0, 255);
+    updateViewer(handler);
   }
   else
   {
-    PCL_INFO("Rainbow LUT chosen\n");
-    color_mode_ = 4;
+    PCL_INFO("Rainbow chosen\n");
+    pcl::visualization::PointCloudColorHandlerGenericField<pcl::PointXYZRGBA> handler (cloud_, "y");
+    updateViewer(handler);
   }
-
-  colorCloudDistances ();
-  viewer_->updatePointCloud (cloud_, "cloud");
-  ui->qvtkWidget->update ();
 }
 
 
@@ -220,120 +196,3 @@ PCLViewer::pSliderValueChanged (int value)
   ui->qvtkWidget->update ();
 }
 
-void
-PCLViewer::colorCloudDistances ()
-{
-  // Find the minimum and maximum values along the selected axis
-  double min, max;
-  // Set an initial value
-  switch (filtering_axis_)
-  {
-    case 0:  // x
-      min = cloud_->points[0].x;
-      max = cloud_->points[0].x;
-      break;
-    case 1:  // y
-      min = cloud_->points[0].y;
-      max = cloud_->points[0].y;
-      break;
-    default:  // z
-      min = cloud_->points[0].z;
-      max = cloud_->points[0].z;
-      break;
-  }
-
-  // Search for the minimum/maximum
-  for (PointCloudT::iterator cloud_it = cloud_->begin (); cloud_it != cloud_->end (); ++cloud_it)
-  {
-    switch (filtering_axis_)
-    {
-      case 0:  // x
-        if (min > cloud_it->x)
-          min = cloud_it->x;
-
-        if (max < cloud_it->x)
-          max = cloud_it->x;
-        break;
-      case 1:  // y
-        if (min > cloud_it->y)
-          min = cloud_it->y;
-
-        if (max < cloud_it->y)
-          max = cloud_it->y;
-        break;
-      default:  // z
-        if (min > cloud_it->z)
-          min = cloud_it->z;
-
-        if (max < cloud_it->z)
-          max = cloud_it->z;
-        break;
-    }
-  }
-
-  // Compute LUT scaling to fit the full histogram spectrum
-  double lut_scale = 255.0 / (max - min);  // max is 255, min is 0
-
-  if (min == max)  // In case the cloud is flat on the chosen direction (x,y or z)
-    lut_scale = 1.0;  // Avoid rounding error in boost
-
-  for (PointCloudT::iterator cloud_it = cloud_->begin (); cloud_it != cloud_->end (); ++cloud_it)
-  {
-    int value;
-    switch (filtering_axis_)
-    {
-      case 0:  // x
-        value = boost::math::iround ( (cloud_it->x - min) * lut_scale);  // Round the number to the closest integer
-        break;
-      case 1:  // y
-        value = boost::math::iround ( (cloud_it->y - min) * lut_scale);
-        break;
-      default:  // z
-        value = boost::math::iround ( (cloud_it->z - min) * lut_scale);
-        break;
-    }
-
-    // Apply color to the cloud
-    switch (color_mode_)
-    {
-      case 0:
-        // Blue (= min) -> Red (= max)
-        cloud_it->r = value;
-        cloud_it->g = 0;
-        cloud_it->b = 255 - value;
-        break;
-      case 1:
-        // Green (= min) -> Magenta (= max)
-        cloud_it->r = value;
-        cloud_it->g = 255 - value;
-        cloud_it->b = value;
-        break;
-      case 2:
-        // White (= min) -> Red (= max)
-        cloud_it->r = 255;
-        cloud_it->g = 255 - value;
-        cloud_it->b = 255 - value;
-        break;
-      case 3:
-        // Grey (< 128) / Red (> 128)
-        if (value > 128)
-        {
-          cloud_it->r = 255;
-          cloud_it->g = 0;
-          cloud_it->b = 0;
-        }
-        else
-        {
-          cloud_it->r = 128;
-          cloud_it->g = 128;
-          cloud_it->b = 128;
-        }
-        break;
-      default:
-        // Blue -> Green -> Red (~ rainbow)
-        cloud_it->r = value > 128 ? (value - 128) * 2 : 0;  // r[128] = 0, r[255] = 255
-        cloud_it->g = value < 128 ? 2 * value : 255 - ( (value - 128) * 2);  // g[0] = 0, g[128] = 255, g[255] = 0
-        cloud_it->b = value < 128 ? 255 - (2 * value) : 0;  // b[0] = 255, b[128] = 0
-    }
-  }
-}

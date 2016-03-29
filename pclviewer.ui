@@ -109,110 +109,65 @@
       <item>
        <widget class="QGroupBox" name="groupBox_ColorMode">
         <property name="title">
-         <string>Color</string>
+         <string>Point Color</string>
         </property>
         <layout class="QVBoxLayout" name="verticalLayout">
          <item>
-          <widget class="QGroupBox" name="groupBox_Axis">
-           <property name="title">
-            <string>Axis</string>
+          <widget class="QRadioButton" name="radioButton_Original">
+           <property name="text">
+            <string>Original</string>
            </property>
-           <layout class="QHBoxLayout" name="horizontalLayout_2">
-            <item>
-             <widget class="QRadioButton" name="radioButton_x">
-              <property name="text">
-               <string>X</string>
-              </property>
-              <property name="checked">
-               <bool>false</bool>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QRadioButton" name="radioButton_y">
-              <property name="text">
-               <string>Y</string>
-              </property>
-              <property name="checked">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QRadioButton" name="radioButton_z">
-              <property name="text">
-               <string>Z</string>
-              </property>
-              <property name="checked">
-               <bool>false</bool>
-              </property>
-             </widget>
-            </item>
-           </layout>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
           </widget>
          </item>
          <item>
-          <widget class="QGroupBox" name="groupBox_Color">
-           <property name="title">
-            <string>Gradient</string>
+          <widget class="QRadioButton" name="radioButton_Red">
+           <property name="text">
+            <string>Red</string>
            </property>
-           <layout class="QVBoxLayout" name="horizontalLayout_c">
-            <item>
-             <widget class="QRadioButton" name="radioButton_BlueRed">
-              <property name="text">
-               <string>Blue to red</string>
-              </property>
-              <property name="checked">
-               <bool>false</bool>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QRadioButton" name="radioButton_GreenMagenta">
-              <property name="text">
-               <string>Green to magenta</string>
-              </property>
-              <property name="checked">
-               <bool>false</bool>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QRadioButton" name="radioButton_WhiteRed">
-              <property name="text">
-               <string>White to red</string>
-              </property>
-              <property name="checked">
-               <bool>false</bool>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QRadioButton" name="radioButton_GreyRed">
-              <property name="text">
-               <string>Grey / red</string>
-              </property>
-              <property name="checked">
-               <bool>false</bool>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QRadioButton" name="radioButton_Rainbow">
-              <property name="text">
-               <string>Rainbow</string>
-              </property>
-              <property name="checked">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
-           </layout>
+           <property name="checked">
+            <bool>false</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QRadioButton" name="radioButton_Green">
+           <property name="text">
+            <string>Green</string>
+           </property>
+           <property name="checked">
+            <bool>false</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QRadioButton" name="radioButton_Blue">
+           <property name="text">
+            <string>Blue</string>
+           </property>
+           <property name="checked">
+            <bool>false</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QRadioButton" name="radioButton_Rainbow">
+           <property name="text">
+            <string>Rainbow</string>
+           </property>
+           <property name="checked">
+            <bool>false</bool>
+           </property>
           </widget>
          </item>
         </layout>
        </widget>
       </item>
+
+
+
       <item>
        <widget class="QGroupBox" name="groupBox_Size">
         <property name="sizePolicy">
@@ -228,7 +183,7 @@
          </size>
         </property>
         <property name="title">
-         <string>Size</string>
+         <string>Point Size</string>
         </property>
         <layout class="QHBoxLayout" name="horizontalLayout_s">
          <item>
@@ -300,8 +255,9 @@
   </customwidget>
  </customwidgets>
  <tabstops>
+  <tabstop>lineEdit_path</tabstop>
+  <tabstop>pushButton_browse</tabstop>
   <tabstop>pushButton_load</tabstop>
-  <tabstop>radioButton_z</tabstop>
  </tabstops>
  <resources/>
  <connections/>
