@@ -14,17 +14,17 @@ Just choose a pcd or ply file and click `Load` button.
 
 Mouse:
 
-Drag with left button - adjust viewing angle
-Drag with middle button - pan
-Scroll - zoom
+    Drag with left button - adjust viewing angle
+    Drag with middle button - pan
+    Scroll - zoom
 
 Keyboard:
 
-f - fly to point
-j - take screenshot
-g - toggle scale grid
-u - toggle lookup table 
-o - toggle perspective/parallel view
+    f - fly to point
+    j - take screenshot
+    g - toggle scale grid
+    u - toggle lookup table 
+    o - toggle perspective/parallel view
 
 ## Dependencies
 
