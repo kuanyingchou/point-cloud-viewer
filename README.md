@@ -1,6 +1,6 @@
 # Point Cloud Viewer
 
-A point cloud viewer implemented with Qt. Based on the excellent pcl [tutorial](http://pointclouds.org/documentation/tutorials/qt_visualizer.php#qt-visualizer).
+A point cloud viewer implemented with Qt and the excellent [pcl library](http://pointclouds.org/). Based on the official [tutorial](http://pointclouds.org/documentation/tutorials/qt_visualizer.php#qt-visualizer).
 
 ![screenshot](https://dl.dropboxusercontent.com/u/31448207/screenshots/VirtualBox_ubuntu1404_29_03_2016_15_30_29.png)
 
@@ -14,7 +14,7 @@ A point cloud viewer implemented with Qt. Based on the excellent pcl [tutorial](
 
 ## Usage
 
-Just choose a pcd or ply file and click `Load` button.
+Just choose a pcd or ply file and click the `Load` button.
 
 Mouse:
 
